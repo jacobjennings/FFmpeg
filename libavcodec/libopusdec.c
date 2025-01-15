@@ -62,7 +62,18 @@ static av_cold int libopus_decode_init(AVCodecContext *avc)
         channels = 2;
     }
 
-    avc->sample_rate    = 48000;
+    if (!avc->sample_rate)
+        avc->sample_rate = 48000;
+
+    if (avc->sample_rate != 8000 && avc->sample_rate != 12000 &&
+        avc->sample_rate != 16000 && avc->sample_rate != 24000 &&
+        avc->sample_rate != 48000) {
+        av_log(avc, AV_LOG_ERROR,
+               "Invalid libopus decoder sample rate %d, must be 8000, 12000, 16000, 24000, or 48000\n",
+               avc->sample_rate);
+        return AVERROR(EINVAL);
+    }
+
     avc->sample_fmt     = avc->request_sample_fmt == AV_SAMPLE_FMT_FLT ?
                           AV_SAMPLE_FMT_FLT : AV_SAMPLE_FMT_S16;
     av_channel_layout_uninit(&avc->ch_layout);
